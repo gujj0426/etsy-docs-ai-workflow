@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Etsy 图片 COS 上传助手",
+  "version": "1.0.0",
+  "description": "上传图片到腾讯文档时，自动同步上传到腾讯云 COS，并将 CDN URL 写入字段",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://docs.qq.com/*",
+    "https://docs.open.qq.com/*",
+    "https://etsy-ai-images-1405462135.cos.ap-shanghai.myqcloud.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.qq.com/*"],
+      "js": ["content.js"],
+      "css": [],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Etsy COS 上传助手"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 360px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; }
+  .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .header h1 { font-size: 15px; font-weight: 600; }
+  .header p { font-size: 11px; opacity: 0.85; }
+
+  .card { background: #fff; margin: 12px 10px; border-radius: 10px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  .card-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; font-weight: 500; }
+  input, select {
+    width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 12px; outline: none; transition: border-color 0.2s; background: #fafafa;
+  }
+  input:focus, select:focus { border-color: #1a73e8; background: #fff; }
+  select { cursor: pointer; }
+  .field { margin-bottom: 10px; }
+  .row { display: flex; gap: 8px; }
+  .row .field { flex: 1; }
+
+  .btn {
+    width: 100%; padding: 9px; border: none; border-radius: 7px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: #1a73e8; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #1557b0; }
+  .btn-success { background: #27ae60; color: #fff; }
+  .btn-success:hover:not(:disabled) { background: #1e8449; }
+  .btn-purple { background: #8e44ad; color: #fff; }
+  .btn-purple:hover:not(:disabled) { background: #6c3483; }
+  .btn-outline { background: #fff; color: #1a73e8; border: 1.5px solid #1a73e8; }
+  .btn-outline:hover { background: #e8f0fe; }
+
+  .status { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-top: 10px; word-break: break-all; }
+  .status.ok { background: #e6f4ea; color: #1e7e34; }
+  .status.err { background: #fce8e6; color: #c5221f; }
+  .status.warn { background: #fef7e0; color: #b45309; }
+  .status.info { background: #e8f0fe; color: #1a73e8; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; margin-top: 4px; }
+
+  .url-display { font-size: 10px; color: #1a73e8; word-break: break-all; margin-top: 6px; display: block; }
+  .url-display:hover { text-decoration: underline; }
+
+  .hint { font-size: 10px; color: #999; margin-top: 8px; line-height: 1.4; }
+  .divider { height: 1px; background: #eee; margin: 10px 0; }
+  .badge { display: inline-block; background: #e8f0fe; color: #1a73e8; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+
+  .footer { text-align: center; font-size: 10px; color: #bbb; padding: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <rect width="28" height="28" rx="7" fill="#fff" fill-opacity="0.2"/>
+    <path d="M7 14 L12 9 L17 14 L21 10" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7 18 L12 14 L17 18 L21 14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+  </svg>
+  <div>
+    <h1>Etsy AI 图片工作流</h1>
+    <p>上传 COS → 自动写入腾讯文档 → AI 生图</p>
+  </div>
+</div>
+
+<!-- 手动上传测试 -->
+<div class="card">
+  <div class="card-title">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="#1a73e8"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+    手动上传测试
+  </div>
+  <div class="field">
+    <input type="file" id="testFile" accept="image/*" style="background:#fff; padding: 6px;">
+  </div>
+  <div id="testResult" style="font-size:11px; margin-top:6px; word-break:break-all; color:#555;"></div>
+</div>
+
+<!-- AI 触发 -->
+<div class="card">
+  <div class="card-title">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="#8e44ad"><path d="M21 10.12h-6.78l2.74-2.82-2.18-2.18-3.17 3.22-3.17-3.22-2.18 2.18 2.74 2.82H3v2h6.78l-2.74 2.82 2.18 2.18 3.17-3.22 3.17 3.22 2.18-2.18-2.74-2.82H21v-2z"/></svg>
+    AI 生图触发
+    <span class="badge">新功能</span>
+  </div>
+
+  <div id="aiStatus" class="status warn">
+    <span class="status-dot"></span>
+    <span>⏳ 等待服务器连接...</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="field">
+    <label>记录ID（record_id）<a href="https://docs.qq.com/sheet/KFoUkmaZFqLP" target="_blank" style="font-size:10px;color:#1a73e8;float:right">在腾讯文档查看 →</a></label>
+    <input type="text" id="recordId" placeholder="输入腾讯文档行的 record_id，如 rdUAZI">
+    <p class="hint">⚠️ 在腾讯文档 workFlowTest 中，行 URL 或右键「复制记录链接」可找到 record_id</p>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>设计风格</label>
+      <select id="styleSelect">
+        <option value="宠物头像(见附图)">宠物头像</option>
+        <option value="人物头像(见附图)">人物头像</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>颜色</label>
+      <input type="text" id="colorInput" placeholder="如：黑色、金色">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>COS 图片地址（自动填充）</label>
+    <a id="cdnUrlDisplay" class="url-display" href="#" target="_blank">（等待上传后自动显示）</a>
+  </div>
+
+  <button class="btn btn-primary" id="btnWriteTdx">📤 写入「客户原图」</button>
+  <button class="btn btn-purple" id="btnTriggerAi">✨ 立即生成 AI 图</button>
+
+  <p class="hint">
+    💡 流程：先上传图片 → 填入 record_id → 点「写入客户原图」→
+    点「立即生成 AI 图」（约需 30-60 秒）
+  </p>
+</div>
+
+<div class="footer">Etsy AI 图片工作流 · v2.0.0</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
